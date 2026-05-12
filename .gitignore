@@ -1,6 +1,7 @@
 .env
 *.local.json
 *.local.txt
+*.local.cjs
 API_keys.local.json
 __pycache__/
 .DS_Store
