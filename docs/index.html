@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Birdeye Token Radar</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17201d;
+        --muted: #60716b;
+        --line: #d7e0dc;
+        --panel: #ffffff;
+        --surface: #f3f7f4;
+        --accent: #0f8b6f;
+        --accent-2: #d97706;
+        --danger: #b42318;
+        --shadow: 0 16px 36px rgba(23, 32, 29, 0.09);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+        background: var(--surface);
+      }
+
+      .shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 40px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 20px;
+        align-items: end;
+        padding: 22px 0 26px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 5vw, 4.5rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        max-width: 760px;
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.55;
+      }
+
+      .stamp {
+        min-width: 220px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .stamp span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .stamp strong {
+        display: block;
+        margin-top: 6px;
+        font-size: 1rem;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin: 18px 0 22px;
+      }
+
+      .stat {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .stat span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 1.45rem;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 14px;
+      }
+
+      .toolbar label {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      input[type="search"] {
+        width: min(360px, 100%);
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        color: var(--ink);
+        background: var(--panel);
+        font: inherit;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      table {
+        width: 100%;
+        min-width: 940px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 14px 13px;
+        border-bottom: 1px solid var(--line);
+        text-align: right;
+        vertical-align: middle;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        background: #f9fbfa;
+      }
+
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .token {
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+      }
+
+      .logo {
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: #e7eee9;
+        object-fit: cover;
+      }
+
+      .name {
+        min-width: 0;
+      }
+
+      .name strong {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .name span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.82rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .score {
+        display: inline-flex;
+        min-width: 62px;
+        justify-content: center;
+        padding: 6px 8px;
+        border-radius: 999px;
+        color: #ffffff;
+        background: var(--accent);
+        font-weight: 800;
+      }
+
+      .positive {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .negative {
+        color: var(--danger);
+        font-weight: 700;
+      }
+
+      .method {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+        margin-top: 22px;
+      }
+
+      .method section {
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      h2 {
+        margin: 0 0 10px;
+        font-size: 1.05rem;
+      }
+
+      .method p,
+      .method li {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .method ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+      }
+
+      .error {
+        margin-top: 20px;
+        padding: 16px;
+        border: 1px solid #f3b3a9;
+        border-radius: 8px;
+        color: var(--danger);
+        background: #fff7f5;
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          width: min(100% - 20px, 1180px);
+          padding-top: 14px;
+        }
+
+        header,
+        .method {
+          grid-template-columns: 1fr;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .stamp {
+          min-width: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div>
+          <h1>Birdeye Token Radar</h1>
+          <p class="lede">
+            A Solana token monitor that converts Birdeye market data into an explainable
+            momentum score using liquidity, volume, traders, holders, and price movement.
+          </p>
+        </div>
+        <div class="stamp">
+          <span>Generated</span>
+          <strong id="generated">Loading data</strong>
+        </div>
+      </header>
+
+      <section class="stats" aria-label="Run summary">
+        <div class="stat">
+          <span>Successful API Calls</span>
+          <strong id="calls">0</strong>
+        </div>
+        <div class="stat">
+          <span>Candidate Universe</span>
+          <strong id="universe">0</strong>
+        </div>
+        <div class="stat">
+          <span>Ranked Tokens</span>
+          <strong id="ranked">0</strong>
+        </div>
+        <div class="stat">
+          <span>Submission Ready</span>
+          <strong id="ready">No</strong>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <label>
+          Filter
+          <input id="search" type="search" placeholder="Symbol, name, or address" />
+        </label>
+        <label>
+          <input id="min-liquidity" type="checkbox" />
+          $1M+ liquidity
+        </label>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Score</th>
+              <th>Price</th>
+              <th>24h</th>
+              <th>Liquidity</th>
+              <th>24h Volume</th>
+              <th>Holders</th>
+              <th>Unique Wallets</th>
+              <th>Buy/Sell</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <div class="method">
+        <section>
+          <h2>Signal Design</h2>
+          <p>
+            This build favors practical monitoring over a black-box ranking. Each row exposes
+            the market structure that influenced the score, making it usable for watchlists,
+            alerts, and analyst triage.
+          </p>
+          <ul id="features"></ul>
+        </section>
+        <section>
+          <h2>Endpoint Mix</h2>
+          <ul id="endpoints"></ul>
+        </section>
+      </div>
+
+      <div id="error" class="error" hidden></div>
+    </main>
+
+    <script>
+      const formatUsd = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        notation: "compact",
+        maximumFractionDigits: 2,
+      });
+      const formatNumber = new Intl.NumberFormat("en-US", { notation: "compact" });
+      const formatPrice = new Intl.NumberFormat("en-US", {
+        maximumSignificantDigits: 6,
+      });
+
+      let tokens = [];
+
+      function text(id, value) {
+        document.getElementById(id).textContent = value;
+      }
+
+      function pctClass(value) {
+        return value >= 0 ? "positive" : "negative";
+      }
+
+      function renderRows() {
+        const query = document.getElementById("search").value.trim().toLowerCase();
+        const liquidOnly = document.getElementById("min-liquidity").checked;
+        const rows = document.getElementById("rows");
+        rows.innerHTML = "";
+
+        tokens
+          .filter((token) => {
+            const haystack = `${token.symbol} ${token.name} ${token.address}`.toLowerCase();
+            return (!query || haystack.includes(query)) && (!liquidOnly || token.liquidityUSD >= 1000000);
+          })
+          .forEach((token) => {
+            const row = document.createElement("tr");
+            const logo = token.logoURI
+              ? `<img class="logo" src="${token.logoURI}" alt="" loading="lazy" />`
+              : `<span class="logo" aria-hidden="true"></span>`;
+            row.innerHTML = `
+              <td>
+                <div class="token">
+                  ${logo}
+                  <div class="name">
+                    <strong>${token.symbol}</strong>
+                    <span title="${token.address}">${token.name}</span>
+                  </div>
+                </div>
+              </td>
+              <td><span class="score">${token.score.toFixed(1)}</span></td>
+              <td>$${formatPrice.format(token.price || 0)}</td>
+              <td class="${pctClass(token.priceChange24h)}">${token.priceChange24h.toFixed(2)}%</td>
+              <td>${formatUsd.format(token.liquidityUSD || 0)}</td>
+              <td>${formatUsd.format(token.volume24hUSD || 0)}</td>
+              <td>${formatNumber.format(token.holders || 0)}</td>
+              <td>${formatNumber.format(token.uniqueWallet24h || 0)}</td>
+              <td>${Math.round((token.buySellBalance || 0) * 100)}%</td>
+            `;
+            rows.appendChild(row);
+          });
+      }
+
+      async function boot() {
+        try {
+          const response = await fetch("data/radar.json", { cache: "no-store" });
+          if (!response.ok) throw new Error(`Failed to load radar.json: ${response.status}`);
+          const data = await response.json();
+          tokens = data.tokens || [];
+
+          text("generated", new Date(data.generatedAt).toLocaleString());
+          text("calls", `${data.calls.successful}/${data.calls.minimumRequired}`);
+          text("universe", formatNumber.format(data.method.candidateUniverse));
+          text("ranked", formatNumber.format(data.method.rankedTokens));
+          text("ready", data.submissionReady ? "Yes" : "No");
+
+          const features = document.getElementById("features");
+          features.innerHTML = "";
+          data.method.features.forEach((feature) => {
+            const item = document.createElement("li");
+            item.textContent = feature;
+            features.appendChild(item);
+          });
+
+          const endpoints = document.getElementById("endpoints");
+          endpoints.innerHTML = "";
+          Object.entries(data.calls.endpoints).forEach(([endpoint, count]) => {
+            const item = document.createElement("li");
+            item.textContent = `${endpoint}: ${count} successful calls`;
+            endpoints.appendChild(item);
+          });
+
+          renderRows();
+        } catch (error) {
+          const box = document.getElementById("error");
+          box.hidden = false;
+          box.textContent = error.message;
+        }
+      }
+
+      document.getElementById("search").addEventListener("input", renderRows);
+      document.getElementById("min-liquidity").addEventListener("change", renderRows);
+      boot();
+    </script>
+  </body>
+</html>

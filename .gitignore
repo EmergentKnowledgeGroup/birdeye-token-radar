@@ -1,0 +1,7 @@
+.env
+*.local.json
+API_keys.local.json
+__pycache__/
+.DS_Store
+docs/data/call-log.json
+docs/data/raw/
